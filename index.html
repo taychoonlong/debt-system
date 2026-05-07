@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>收账欠款记录系统</title>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<style>
+body{
+    font-family: Arial;
+    background:#f5f5f5;
+    margin:0;
+    padding:15px;
+}
+
+.container{
+    max-width:1000px;
+    margin:auto;
+    background:white;
+    padding:20px;
+    border-radius:15px;
+}
+
+h1{
+    text-align:center;
+    color:#7a4900;
+}
+
+.total{
+    font-size:24px;
+    font-weight:bold;
+    color:red;
+    margin-bottom:20px;
+}
+
+input,select,textarea,button{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border-radius:10px;
+    border:1px solid #ccc;
+    box-sizing:border-box;
+    font-size:16px;
+}
+
+button{
+    background:#7a4900;
+    color:white;
+    border:none;
+    cursor:pointer;
+}
+
+button:hover{
+    opacity:0.9;
+}
+
+.month-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+    margin-top:15px;
+}
+
+.month-box{
+    background:#fafafa;
+    padding:10px;
+    border-radius:10px;
+}
+
+.customer{
+    background:#fff8ef;
+    padding:15px;
+    margin-top:20px;
+    border-radius:15px;
+    border-left:6px solid orange;
+}
+
+.customer h3{
+    margin:0;
+}
+
+.status-red{
+    color:red;
+    font-weight:bold;
+}
+
+.status-green{
+    color:green;
+    font-weight:bold;
+}
+
+.action-buttons{
+    display:flex;
+    gap:10px;
+    margin-top:10px;
+}
+
+.action-buttons button{
+    flex:1;
+}
+
+.search{
+    margin-top:30px;
+}
+
+@media(min-width:768px){
+    .month-grid{
+        grid-template-columns:repeat(4,1fr);
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>收账欠款记录系统</h1>
+
+<div class="total">
+总未收：RM <span id="totalAmount">0</span>
+</div>
+
+<select id="area">
+<option value="">选择地区</option>
+<option>KL</option>
+<option>Ipoh</option>
+<option>Johor</option>
+<option>Penang</option>
+</select>
+
+<input type="text" id="name" placeholder="客户名字">
+
+<input type="text" id="phone" placeholder="电话号码 例如 60123456789">
+
+<input type="number" id="amount" placeholder="欠款金额 RM">
+
+<input type="number" id="year" placeholder="年份 例如 2026">
+
+<div class="month-grid" id="months"></div>
+
+<textarea id="remark" placeholder="备注"></textarea>
+
+<button onclick="addCustomer()">新增记录</button>
+
+<button onclick="exportExcel()">导出Excel总结</button>
+
+<div class="search">
+<input type="text" id="search" placeholder="搜索客户、电话、地区、年份" onkeyup="renderCustomers()">
+</div>
+
+<div id="customerList"></div>
+
+</div>
+
+<script>
+
+const monthNames = [
+"1月","2月","3月","4月",
+"5月","6月","7月","8月",
+"9月","10月","11月","12月"
+];
+
+const monthDiv = document.getElementById("months");
+
+monthNames.forEach((m,i)=>{
+    monthDiv.innerHTML += `
+    <div class="month-box">
+        <label>${m}</label>
+        <select id="month${i}">
+            <option>不记录</option>
+            <option>未结账</option>
+            <option>结账</option>
+        </select>
+    </div>
+    `;
+});
+
+let customers = JSON.parse(localStorage.getItem("customers")) || [];
+
+function addCustomer(){
+
+    const area = document.getElementById("area").value;
+    const name = document.getElementById("name").value;
+    const phone = document.getElementById("phone").value;
+    const amount = document.getElementById("amount").value;
+    const year = document.getElementById("year").value;
+    const remark = document.getElementById("remark").value;
+
+    let months = [];
+
+    for(let i=0;i<12;i++){
+        months.push(document.getElementById(`month${i}`).value);
+    }
+
+    customers.push({
+        area,
+        name,
+        phone,
+        amount,
+        year,
+        remark,
+        months
+    });
+
+    localStorage.setItem("customers",JSON.stringify(customers));
+
+    renderCustomers();
+
+    alert("记录成功");
+}
+
+function renderCustomers(){
+
+    const list = document.getElementById("customerList");
+    const keyword = document.getElementById("search").value.toLowerCase();
+
+    list.innerHTML = "";
+
+    let total = 0;
+
+    customers.forEach((c,index)=>{
+
+        let searchText = `
+        ${c.name}
+        ${c.phone}
+        ${c.area}
+        ${c.year}
+        `.toLowerCase();
+
+        if(!searchText.includes(keyword)) return;
+
+        total += Number(c.amount);
+
+        let unpaid = [];
+
+        c.months.forEach((m,i)=>{
+            if(m==="未结账"){
+                unpaid.push(monthNames[i]);
+            }
+        });
+
+        let message = `您好，提醒您 ${c.year} ${unpaid.join("、")} 款项尚未结清，谢谢。`;
+
+        list.innerHTML += `
+        <div class="customer">
+
+            <h3>${c.name}</h3>
+
+            <p>地区：${c.area}</p>
+
+            <p>电话：${c.phone}</p>
+
+            <p>金额：RM ${c.amount}</p>
+
+            <p>年份：${c.year}</p>
+
+            <p>
+            未结账月份：
+            <span class="status-red">
+            ${unpaid.join("、") || "无"}
+            </span>
+            </p>
+
+            <p>备注：${c.remark || "-"}</p>
+
+            <div class="action-buttons">
+
+            <button onclick="sendWhatsApp('${c.phone}','${message}')">
+            WhatsApp提醒
+            </button>
+
+            <button onclick="deleteCustomer(${index})">
+            删除
+            </button>
+
+            </div>
+
+        </div>
+        `;
+    });
+
+    document.getElementById("totalAmount").innerText = total.toFixed(2);
+}
+
+function deleteCustomer(index){
+
+    if(confirm("确定删除？")){
+
+        customers.splice(index,1);
+
+        localStorage.setItem("customers",JSON.stringify(customers));
+
+        renderCustomers();
+    }
+}
+
+function sendWhatsApp(phone,message){
+
+    let url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+
+    window.open(url,"_blank");
+}
+
+function exportExcel(){
+
+    let data = [];
+
+    customers.forEach(c=>{
+
+        let unpaid = [];
+
+        c.months.forEach((m,i)=>{
+            if(m==="未结账"){
+                unpaid.push(monthNames[i]);
+            }
+        });
+
+        data.push({
+            地区:c.area,
+            客户:c.name,
+            电话:c.phone,
+            金额:c.amount,
+            年份:c.year,
+            未结账月份:unpaid.join("、"),
+            备注:c.remark
+        });
+    });
+
+    let ws = XLSX.utils.json_to_sheet(data);
+
+    let wb = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(wb,ws,"收账总结");
+
+    XLSX.writeFile(wb,"收账总结.xlsx");
+}
+
+renderCustomers();
+
+</script>
+
+</body>
+</html>
