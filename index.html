@@ -11,25 +11,167 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <style>
-body{font-family:Arial,sans-serif;background:#f5f5f5;margin:0;padding:15px}
-.container{max-width:1000px;margin:auto;background:white;padding:20px;border-radius:15px}
-h1{text-align:center;color:#7a4900}
-.lang-btn{background:#333;margin-bottom:15px}
-.sync-status{background:#eef7ff;color:#0066aa;padding:10px;border-radius:10px;margin-bottom:15px;font-weight:bold}
-.total{font-size:22px;font-weight:bold;color:red;margin-bottom:20px}
-input,select,textarea,button{width:100%;padding:12px;margin-top:10px;border-radius:10px;border:1px solid #ccc;box-sizing:border-box;font-size:16px}
-button{background:#7a4900;color:white;border:none;cursor:pointer;font-weight:bold}
-.cancel-btn{background:#777;display:none}
-.month-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:15px}
-.month-box{background:#fafafa;padding:10px;border-radius:10px}
-.month-box label{font-weight:bold}
-.customer{background:#fff8ef;padding:15px;margin-top:20px;border-radius:15px;border-left:6px solid orange}
-.status-red{color:red;font-weight:bold}
-.action-buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
-.search{margin-top:30px}
-.small-text{font-size:13px;color:#777;margin-top:5px}
-@media(max-width:600px){.action-buttons{grid-template-columns:1fr}}
-@media(min-width:768px){.month-grid{grid-template-columns:repeat(4,1fr)}}
+body{
+    font-family:Arial,sans-serif;
+    background:#f5f5f5;
+    margin:0;
+    padding:15px
+}
+
+.container{
+    max-width:1000px;
+    margin:auto;
+    background:white;
+    padding:20px;
+    border-radius:15px
+}
+
+h1{
+    text-align:center;
+    color:#7a4900
+}
+
+.lang-btn{
+    background:#333;
+    margin-bottom:15px
+}
+
+.sync-status{
+    background:#eef7ff;
+    color:#0066aa;
+    padding:10px;
+    border-radius:10px;
+    margin-bottom:15px;
+    font-weight:bold
+}
+
+.total{
+    font-size:28px;
+    font-weight:bold;
+    color:red;
+    margin-bottom:20px
+}
+
+input,select,textarea,button{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border-radius:10px;
+    border:1px solid #ccc;
+    box-sizing:border-box;
+    font-size:16px
+}
+
+button{
+    background:#7a4900;
+    color:white;
+    border:none;
+    cursor:pointer;
+    font-weight:bold
+}
+
+.cancel-btn{
+    background:#777;
+    display:none
+}
+
+.month-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+    margin-top:15px
+}
+
+.month-box{
+    background:#fafafa;
+    padding:10px;
+    border-radius:10px
+}
+
+.month-box label{
+    font-weight:bold
+}
+
+.customer{
+    background:#fff8ef;
+    padding:20px;
+    margin-top:20px;
+    border-radius:15px;
+    border-left:6px solid orange
+}
+
+.customer h3{
+    font-size:32px;
+    margin-bottom:15px;
+    color:#111
+}
+
+.customer p{
+    font-size:22px;
+    margin:16px 0;
+    line-height:1.6
+}
+
+/* 金额放大放粗红色 */
+.big-red-amount{
+    font-size:40px;
+    font-weight:900;
+    color:red;
+    line-height:1.3
+}
+
+.status-red{
+    color:red;
+    font-weight:900;
+    font-size:28px;
+    line-height:1.5
+}
+
+.action-buttons{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-top:20px
+}
+
+.search{
+    margin-top:30px
+}
+
+.small-text{
+    font-size:13px;
+    color:#777;
+    margin-top:5px
+}
+
+@media(max-width:600px){
+
+    .action-buttons{
+        grid-template-columns:1fr
+    }
+
+    .customer h3{
+        font-size:28px
+    }
+
+    .customer p{
+        font-size:20px
+    }
+
+    .big-red-amount{
+        font-size:34px
+    }
+
+    .status-red{
+        font-size:24px
+    }
+}
+
+@media(min-width:768px){
+    .month-grid{
+        grid-template-columns:repeat(4,1fr)
+    }
+}
 </style>
 </head>
 
@@ -43,7 +185,8 @@ button{background:#7a4900;color:white;border:none;cursor:pointer;font-weight:bol
 <h1 id="title">收账欠款记录系统</h1>
 
 <div class="total">
-<span id="totalText">总未收：</span>RM <span id="totalAmount">0.00</span>
+<span id="totalText">总未收：</span>
+RM <span id="totalAmount">0.00</span>
 </div>
 
 <select id="area">
@@ -58,7 +201,10 @@ button{background:#7a4900;color:white;border:none;cursor:pointer;font-weight:bol
 <input type="text" id="phone" placeholder="电话号码，例如 0128298002">
 
 <input type="number" id="amount" placeholder="欠款金额 RM" readonly>
-<div class="small-text" id="amountHint">欠款金额会自动根据每个月未结账金额加总</div>
+
+<div class="small-text" id="amountHint">
+欠款金额会自动根据每个月未结账金额加总
+</div>
 
 <input type="number" id="year" placeholder="年份，例如 2026">
 
@@ -67,11 +213,20 @@ button{background:#7a4900;color:white;border:none;cursor:pointer;font-weight:bol
 <textarea id="remark" placeholder="备注"></textarea>
 
 <button onclick="saveCustomer()" id="addBtn">新增记录</button>
-<button onclick="cancelEdit()" id="cancelBtn" class="cancel-btn">取消更改</button>
-<button onclick="exportExcel()" id="exportBtn">导出Excel总结</button>
+
+<button onclick="cancelEdit()" id="cancelBtn" class="cancel-btn">
+取消更改
+</button>
+
+<button onclick="exportExcel()" id="exportBtn">
+导出Excel总结
+</button>
 
 <div class="search">
-<input type="text" id="search" placeholder="搜索客户、电话、地区、年份" onkeyup="renderCustomers()">
+<input type="text"
+id="search"
+placeholder="搜索客户、电话、地区、年份"
+onkeyup="renderCustomers()">
 </div>
 
 <div id="customerList"></div>
@@ -90,301 +245,193 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
+
 const db = firebase.firestore();
 const customersRef = db.collection("customers");
 
 let lang = localStorage.getItem("lang") || "zh";
 let customers = [];
-let editingIndex = null;
 let editingId = null;
-
-const text = {
-    zh:{
-        switch:"English",
-        title:"收账欠款记录系统",
-        total:"总未收：",
-        area:"选择地区",
-        name:"客户名字",
-        phone:"电话号码，例如 0128298002",
-        amount:"欠款金额 RM",
-        amountHint:"欠款金额会自动根据每个月未结账金额加总",
-        year:"年份，例如 2026",
-        remark:"备注",
-        add:"新增记录",
-        update:"更新记录",
-        cancel:"取消更改",
-        export:"导出Excel总结",
-        search:"搜索客户、电话、地区、年份",
-        notRecord:"不记录",
-        paid:"结账",
-        unpaid:"未结账",
-        monthlyAmount:"本月欠款 RM",
-        areaLabel:"地区",
-        phoneLabel:"电话",
-        amountLabel:"金额",
-        yearLabel:"年份",
-        unpaidMonth:"未结账月份",
-        remarkLabel:"备注",
-        whatsapp:"WhatsApp提醒",
-        edit:"更改",
-        delete:"删除",
-        saved:"记录成功，已同步云端",
-        updated:"记录已更新，已同步云端",
-        confirmDelete:"确定删除？",
-        noUnpaid:"无",
-        syncOk:"云端同步已连接",
-        syncError:"云端连接失败，请检查 Firebase 设置",
-        message:"您好，提醒您：您的款项尚未结清。"
-    },
-    en:{
-        switch:"中文",
-        title:"Debt Collection Record System",
-        total:"Total Unpaid:",
-        area:"Select Area",
-        name:"Customer Name",
-        phone:"Phone Number, e.g. 0128298002",
-        amount:"Debt Amount RM",
-        amountHint:"Debt amount is automatically calculated from unpaid monthly amounts",
-        year:"Year, e.g. 2026",
-        remark:"Remark",
-        add:"Add Record",
-        update:"Update Record",
-        cancel:"Cancel Edit",
-        export:"Export Excel Summary",
-        search:"Search customer, phone, area, year",
-        notRecord:"Not Record",
-        paid:"Paid",
-        unpaid:"Unpaid",
-        monthlyAmount:"Monthly Debt RM",
-        areaLabel:"Area",
-        phoneLabel:"Phone",
-        amountLabel:"Amount",
-        yearLabel:"Year",
-        unpaidMonth:"Unpaid Months",
-        remarkLabel:"Remark",
-        whatsapp:"WhatsApp Reminder",
-        edit:"Edit",
-        delete:"Delete",
-        saved:"Record saved and synced",
-        updated:"Record updated and synced",
-        confirmDelete:"Confirm delete?",
-        noUnpaid:"None",
-        syncOk:"Cloud sync connected",
-        syncError:"Cloud connection failed. Please check Firebase settings.",
-        message:"Hello, reminder: your payment is still outstanding."
-    }
-};
 
 const monthNamesZh = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
 const monthNamesEn = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-function startCloudSync(){
-    customersRef.orderBy("createdAt","desc").onSnapshot(snapshot=>{
-        customers = [];
-        snapshot.forEach(doc=>{
-            customers.push({
-                id: doc.id,
-                ...doc.data()
-            });
-        });
-
-        document.getElementById("syncStatus").innerText = text[lang].syncOk;
-        renderCustomers();
-
-    },error=>{
-        console.error(error);
-        document.getElementById("syncStatus").innerText = text[lang].syncError;
-    });
-}
-
-function applyLang(){
-    const t = text[lang];
-
-    document.getElementById("langBtn").innerText = t.switch;
-    document.getElementById("title").innerText = t.title;
-    document.getElementById("totalText").innerText = t.total;
-    document.getElementById("areaPlaceholder").innerText = t.area;
-    document.getElementById("name").placeholder = t.name;
-    document.getElementById("phone").placeholder = t.phone;
-    document.getElementById("amount").placeholder = t.amount;
-    document.getElementById("amountHint").innerText = t.amountHint;
-    document.getElementById("year").placeholder = t.year;
-    document.getElementById("remark").placeholder = t.remark;
-    document.getElementById("exportBtn").innerText = t.export;
-    document.getElementById("search").placeholder = t.search;
-    document.getElementById("cancelBtn").innerText = t.cancel;
-    document.getElementById("addBtn").innerText = editingId === null ? t.add : t.update;
-    document.getElementById("syncStatus").innerText = t.syncOk;
-
-    buildMonths();
-    renderCustomers();
-    calculateAmount();
-}
-
 function toggleLang(){
     lang = lang === "zh" ? "en" : "zh";
     localStorage.setItem("lang", lang);
-    applyLang();
+    renderCustomers();
 }
 
 function buildMonths(){
+
     const monthDiv = document.getElementById("months");
-    const names = lang === "zh" ? monthNamesZh : monthNamesEn;
-    const t = text[lang];
-
-    let oldMonths = [];
-    let oldAmounts = [];
-
-    for(let i=0;i<12;i++){
-        const statusEl = document.getElementById(`month${i}`);
-        const amountEl = document.getElementById(`monthAmount${i}`);
-
-        oldMonths[i] = statusEl ? statusEl.value : "不记录";
-        oldAmounts[i] = amountEl ? amountEl.value : "";
-    }
 
     monthDiv.innerHTML = "";
 
+    const names = lang === "zh"
+        ? monthNamesZh
+        : monthNamesEn;
+
     names.forEach((m,i)=>{
+
         monthDiv.innerHTML += `
         <div class="month-box">
+
             <label>${m}</label>
+
             <select id="month${i}" onchange="calculateAmount()">
-                <option value="不记录">${t.notRecord}</option>
-                <option value="未结账">${t.unpaid}</option>
-                <option value="结账">${t.paid}</option>
+                <option value="不记录">不记录</option>
+                <option value="未结账">未结账</option>
+                <option value="结账">结账</option>
             </select>
-            <input type="number" id="monthAmount${i}" placeholder="${t.monthlyAmount}" oninput="calculateAmount()">
+
+            <input
+                type="number"
+                id="monthAmount${i}"
+                placeholder="本月欠款 RM"
+                oninput="calculateAmount()"
+            >
+
         </div>
         `;
     });
-
-    for(let i=0;i<12;i++){
-        document.getElementById(`month${i}`).value = oldMonths[i] || "不记录";
-        document.getElementById(`monthAmount${i}`).value = oldAmounts[i] || "";
-    }
 }
 
 function calculateAmount(){
+
     let total = 0;
 
     for(let i=0;i<12;i++){
-        const status = document.getElementById(`month${i}`)?.value;
-        const amount = Number(document.getElementById(`monthAmount${i}`)?.value || 0);
+
+        const status =
+            document.getElementById(`month${i}`).value;
+
+        const amount =
+            Number(document.getElementById(`monthAmount${i}`).value || 0);
 
         if(status === "未结账"){
             total += amount;
         }
     }
 
-    document.getElementById("amount").value = total.toFixed(2);
+    document.getElementById("amount").value =
+        total.toFixed(2);
 }
 
 function getFormData(){
+
     let months = [];
     let monthAmounts = [];
 
     for(let i=0;i<12;i++){
-        months.push(document.getElementById(`month${i}`).value);
-        monthAmounts.push(Number(document.getElementById(`monthAmount${i}`).value || 0));
+
+        months.push(
+            document.getElementById(`month${i}`).value
+        );
+
+        monthAmounts.push(
+            Number(document.getElementById(`monthAmount${i}`).value || 0)
+        );
     }
 
     calculateAmount();
 
     return {
-        area: document.getElementById("area").value,
-        name: document.getElementById("name").value,
-        phone: document.getElementById("phone").value,
-        amount: Number(document.getElementById("amount").value || 0),
-        year: document.getElementById("year").value,
-        remark: document.getElementById("remark").value,
-        months: months,
-        monthAmounts: monthAmounts,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+
+        area:
+            document.getElementById("area").value,
+
+        name:
+            document.getElementById("name").value,
+
+        phone:
+            document.getElementById("phone").value,
+
+        amount:
+            Number(document.getElementById("amount").value || 0),
+
+        year:
+            document.getElementById("year").value,
+
+        remark:
+            document.getElementById("remark").value,
+
+        months,
+        monthAmounts,
+
+        updatedAt:
+            firebase.firestore.FieldValue.serverTimestamp()
     };
 }
 
 async function saveCustomer(){
+
     const data = getFormData();
 
     try{
+
         if(editingId === null){
-            data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+
+            data.createdAt =
+                firebase.firestore.FieldValue.serverTimestamp();
+
             await customersRef.add(data);
-            alert(text[lang].saved);
+
+            alert("记录成功");
+
         }else{
+
             await customersRef.doc(editingId).update(data);
+
+            alert("记录已更新");
+
             editingId = null;
-            editingIndex = null;
-            document.getElementById("cancelBtn").style.display = "none";
-            alert(text[lang].updated);
         }
 
         clearForm();
-        applyLang();
 
     }catch(error){
-        alert("保存失败 / Save failed");
+
         console.error(error);
+
+        alert("保存失败");
     }
-}
-
-function editCustomer(index){
-    const c = customers[index];
-
-    editingIndex = index;
-    editingId = c.id;
-
-    document.getElementById("area").value = c.area || "";
-    document.getElementById("name").value = c.name || "";
-    document.getElementById("phone").value = c.phone || "";
-    document.getElementById("amount").value = Number(c.amount || 0).toFixed(2);
-    document.getElementById("year").value = c.year || "";
-    document.getElementById("remark").value = c.remark || "";
-
-    for(let i=0;i<12;i++){
-        document.getElementById(`month${i}`).value = c.months && c.months[i] ? c.months[i] : "不记录";
-        document.getElementById(`monthAmount${i}`).value = c.monthAmounts && c.monthAmounts[i] ? c.monthAmounts[i] : "";
-    }
-
-    calculateAmount();
-
-    document.getElementById("addBtn").innerText = text[lang].update;
-    document.getElementById("cancelBtn").style.display = "block";
-
-    window.scrollTo({top:0,behavior:"smooth"});
-}
-
-function cancelEdit(){
-    editingIndex = null;
-    editingId = null;
-    clearForm();
-    document.getElementById("cancelBtn").style.display = "none";
-    document.getElementById("addBtn").innerText = text[lang].add;
 }
 
 function clearForm(){
+
     document.getElementById("area").value = "";
     document.getElementById("name").value = "";
     document.getElementById("phone").value = "";
-    document.getElementById("amount").value = "0.00";
+    document.getElementById("amount").value = "";
     document.getElementById("year").value = "";
     document.getElementById("remark").value = "";
 
     for(let i=0;i<12;i++){
+
         document.getElementById(`month${i}`).value = "不记录";
         document.getElementById(`monthAmount${i}`).value = "";
     }
 }
 
 function getUnpaidDetails(c, monthNames){
+
     let unpaid = [];
 
     if(c.months){
+
         c.months.forEach((m,i)=>{
+
             if(m === "未结账"){
-                const amount = c.monthAmounts && c.monthAmounts[i] ? Number(c.monthAmounts[i]) : 0;
-                unpaid.push(`${monthNames[i]} RM ${amount.toFixed(2)}`);
+
+                const amount =
+                    c.monthAmounts && c.monthAmounts[i]
+                    ? Number(c.monthAmounts[i])
+                    : 0;
+
+                unpaid.push(
+                    `${monthNames[i]} RM ${amount.toFixed(2)}`
+                );
             }
         });
     }
@@ -393,49 +440,90 @@ function getUnpaidDetails(c, monthNames){
 }
 
 function renderCustomers(){
-    const list = document.getElementById("customerList");
-    const keyword = document.getElementById("search").value.toLowerCase();
-    const t = text[lang];
-    const monthNames = lang === "zh" ? monthNamesZh : monthNamesEn;
+
+    const list =
+        document.getElementById("customerList");
+
+    const keyword =
+        document.getElementById("search").value.toLowerCase();
+
+    const monthNames =
+        lang === "zh"
+        ? monthNamesZh
+        : monthNamesEn;
 
     list.innerHTML = "";
 
     let total = 0;
 
     customers.forEach((c,index)=>{
-        let searchText = `${c.name} ${c.phone} ${c.area} ${c.year}`.toLowerCase();
+
+        let searchText =
+            `${c.name} ${c.phone} ${c.area} ${c.year}`.toLowerCase();
 
         if(!searchText.includes(keyword)) return;
 
         total += Number(c.amount || 0);
 
-        let unpaid = getUnpaidDetails(c, monthNames);
+        let unpaid =
+            getUnpaidDetails(c, monthNames);
 
         list.innerHTML += `
+
         <div class="customer">
+
             <h3>${c.name || "-"}</h3>
-            <p>${t.areaLabel}: ${c.area || "-"}</p>
-            <p>${t.phoneLabel}: ${c.phone || "-"}</p>
-            <p>${t.amountLabel}: RM ${Number(c.amount || 0).toFixed(2)}</p>
-            <p>${t.yearLabel}: ${c.year || "-"}</p>
-            <p>${t.unpaidMonth}: <span class="status-red">${unpaid.join("、") || t.noUnpaid}</span></p>
-            <p>${t.remarkLabel}: ${c.remark || "-"}</p>
+
+            <p>地区: ${c.area || "-"}</p>
+
+            <p>电话: ${c.phone || "-"}</p>
+
+            <p class="big-red-amount">
+                金额: RM ${Number(c.amount || 0).toFixed(2)}
+            </p>
+
+            <p>年份: ${c.year || "-"}</p>
+
+            <p>
+                未结账月份:
+                <span class="status-red">
+                    ${unpaid.join("、") || "无"}
+                </span>
+            </p>
+
+            <p>备注: ${c.remark || "-"}</p>
 
             <div class="action-buttons">
-                <button onclick="sendWhatsApp(${index})">${t.whatsapp}</button>
-                <button onclick="editCustomer(${index})">${t.edit}</button>
-                <button onclick="deleteCustomer(${index})">${t.delete}</button>
+
+                <button onclick="sendWhatsApp(${index})">
+                    WhatsApp提醒
+                </button>
+
+                <button onclick="editCustomer(${index})">
+                    更改
+                </button>
+
+                <button onclick="deleteCustomer(${index})">
+                    删除
+                </button>
+
             </div>
+
         </div>
         `;
     });
 
-    document.getElementById("totalAmount").innerText = total.toFixed(2);
+    document.getElementById("totalAmount").innerText =
+        total.toFixed(2);
 }
 
 function formatPhone(phone){
-    phone = String(phone).replace("https://wa.me/","").replace("http://wa.me/","");
-    phone = phone.replace(/\D/g, "");
+
+    phone = String(phone)
+        .replace("https://wa.me/","")
+        .replace("http://wa.me/","");
+
+    phone = phone.replace(/\D/g,"");
 
     if(phone.startsWith("0")){
         return "6" + phone;
@@ -445,80 +533,150 @@ function formatPhone(phone){
         return phone;
     }
 
-    if(phone.startsWith("1")){
-        return "60" + phone;
-    }
-
     return phone;
 }
 
 function sendWhatsApp(index){
+
     const c = customers[index];
-    const monthNames = lang === "zh" ? monthNamesZh : monthNamesEn;
-    const t = text[lang];
 
-    let unpaid = getUnpaidDetails(c, monthNames);
-    let phone = formatPhone(c.phone);
+    const monthNames =
+        lang === "zh"
+        ? monthNamesZh
+        : monthNamesEn;
 
-    let message = `${t.message}\n\n${t.yearLabel}: ${c.year || "-"}\n${t.unpaidMonth}: ${unpaid.join("、") || t.noUnpaid}\n${t.amountLabel}: RM ${Number(c.amount || 0).toFixed(2)}\n\nThank you.`;
+    let unpaid =
+        getUnpaidDetails(c, monthNames);
 
-    let url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    let phone =
+        formatPhone(c.phone);
+
+    let message =
+`您好，提醒您：您的款项尚未结清。
+
+年份: ${c.year || "-"}
+
+未结账月份:
+${unpaid.join("、")}
+
+总金额:
+RM ${Number(c.amount || 0).toFixed(2)}
+
+Thank you.`;
+
+    let url =
+`https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 
     window.location.href = url;
 }
 
+function editCustomer(index){
+
+    const c = customers[index];
+
+    editingId = c.id;
+
+    document.getElementById("area").value = c.area || "";
+    document.getElementById("name").value = c.name || "";
+    document.getElementById("phone").value = c.phone || "";
+    document.getElementById("amount").value = c.amount || "";
+    document.getElementById("year").value = c.year || "";
+    document.getElementById("remark").value = c.remark || "";
+
+    for(let i=0;i<12;i++){
+
+        document.getElementById(`month${i}`).value =
+            c.months[i] || "不记录";
+
+        document.getElementById(`monthAmount${i}`).value =
+            c.monthAmounts[i] || "";
+    }
+
+    calculateAmount();
+
+    document.getElementById("cancelBtn").style.display = "block";
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+}
+
+function cancelEdit(){
+
+    editingId = null;
+
+    clearForm();
+
+    document.getElementById("cancelBtn").style.display = "none";
+}
+
 async function deleteCustomer(index){
-    if(confirm(text[lang].confirmDelete)){
-        const c = customers[index];
+
+    if(confirm("确定删除？")){
 
         try{
-            await customersRef.doc(c.id).delete();
 
-            if(editingId === c.id){
-                cancelEdit();
-            }
+            await customersRef.doc(customers[index].id).delete();
 
         }catch(error){
-            alert("删除失败 / Delete failed");
+
             console.error(error);
+
+            alert("删除失败");
         }
     }
 }
 
 function exportExcel(){
+
     let data = [];
 
     customers.forEach(c=>{
-        let unpaid = getUnpaidDetails(c, monthNamesZh);
 
-        let row = {
+        let unpaid =
+            getUnpaidDetails(c, monthNamesZh);
+
+        data.push({
             Area:c.area,
             Customer:c.name,
             Phone:c.phone,
-            Total_Amount:c.amount,
+            Total:c.amount,
             Year:c.year,
-            Unpaid_Details:unpaid.join("、"),
+            Unpaid:unpaid.join("、"),
             Remark:c.remark
-        };
-
-        monthNamesZh.forEach((m,i)=>{
-            row[`${m}_Status`] = c.months && c.months[i] ? c.months[i] : "";
-            row[`${m}_Amount`] = c.monthAmounts && c.monthAmounts[i] ? c.monthAmounts[i] : 0;
         });
-
-        data.push(row);
     });
 
-    let ws = XLSX.utils.json_to_sheet(data);
-    let wb = XLSX.utils.book_new();
+    let ws =
+        XLSX.utils.json_to_sheet(data);
+
+    let wb =
+        XLSX.utils.book_new();
 
     XLSX.utils.book_append_sheet(wb, ws, "Debt Summary");
+
     XLSX.writeFile(wb, "Debt-Summary.xlsx");
 }
 
+customersRef.orderBy("createdAt","desc")
+.onSnapshot(snapshot=>{
+
+    customers = [];
+
+    snapshot.forEach(doc=>{
+
+        customers.push({
+            id:doc.id,
+            ...doc.data()
+        });
+    });
+
+    renderCustomers();
+});
+
 buildMonths();
-applyLang();
-startCloudSync();
+renderCustomers();
 </script>
 
 </body>
