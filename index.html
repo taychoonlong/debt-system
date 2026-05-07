@@ -14,13 +14,14 @@ h1{text-align:center;color:#7a4900}
 .total{font-size:22px;font-weight:bold;color:red;margin-bottom:20px}
 input,select,textarea,button{width:100%;padding:12px;margin-top:10px;border-radius:10px;border:1px solid #ccc;box-sizing:border-box;font-size:16px}
 button{background:#7a4900;color:white;border:none;cursor:pointer;font-weight:bold}
+.cancel-btn{background:#777;display:none}
 .month-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:15px}
 .month-box{background:#fafafa;padding:10px;border-radius:10px}
 .customer{background:#fff8ef;padding:15px;margin-top:20px;border-radius:15px;border-left:6px solid orange}
 .status-red{color:red;font-weight:bold}
-.action-buttons{display:flex;gap:10px;margin-top:10px}
-.action-buttons button{flex:1}
+.action-buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
 .search{margin-top:30px}
+@media(max-width:600px){.action-buttons{grid-template-columns:1fr}}
 @media(min-width:768px){.month-grid{grid-template-columns:repeat(4,1fr)}}
 </style>
 </head>
@@ -53,7 +54,8 @@ button{background:#7a4900;color:white;border:none;cursor:pointer;font-weight:bol
 
 <textarea id="remark" placeholder="备注"></textarea>
 
-<button onclick="addCustomer()" id="addBtn">新增记录</button>
+<button onclick="saveCustomer()" id="addBtn">新增记录</button>
+<button onclick="cancelEdit()" id="cancelBtn" class="cancel-btn">取消更改</button>
 <button onclick="exportExcel()" id="exportBtn">导出Excel总结</button>
 
 <div class="search">
@@ -66,6 +68,8 @@ button{background:#7a4900;color:white;border:none;cursor:pointer;font-weight:bol
 
 <script>
 let lang = localStorage.getItem("lang") || "zh";
+let customers = JSON.parse(localStorage.getItem("customers")) || [];
+let editingIndex = null;
 
 const text = {
     zh:{
@@ -79,6 +83,8 @@ const text = {
         year:"年份，例如 2026",
         remark:"备注",
         add:"新增记录",
+        update:"更新记录",
+        cancel:"取消更改",
         export:"导出Excel总结",
         search:"搜索客户、电话、地区、年份",
         notRecord:"不记录",
@@ -91,8 +97,10 @@ const text = {
         unpaidMonth:"未结账月份",
         remarkLabel:"备注",
         whatsapp:"WhatsApp提醒",
+        edit:"更改",
         delete:"删除",
         saved:"记录成功",
+        updated:"记录已更新",
         confirmDelete:"确定删除？",
         noUnpaid:"无",
         message:"您好，提醒您：您的款项尚未结清。未结账月份："
@@ -108,6 +116,8 @@ const text = {
         year:"Year, e.g. 2026",
         remark:"Remark",
         add:"Add Record",
+        update:"Update Record",
+        cancel:"Cancel Edit",
         export:"Export Excel Summary",
         search:"Search customer, phone, area, year",
         notRecord:"Not Record",
@@ -120,8 +130,10 @@ const text = {
         unpaidMonth:"Unpaid Months",
         remarkLabel:"Remark",
         whatsapp:"WhatsApp Reminder",
+        edit:"Edit",
         delete:"Delete",
         saved:"Record Saved",
+        updated:"Record Updated",
         confirmDelete:"Confirm delete?",
         noUnpaid:"None",
         message:"Hello, reminder: your payment is still outstanding. Unpaid months: "
@@ -130,8 +142,6 @@ const text = {
 
 const monthNamesZh = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
 const monthNamesEn = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-
-let customers = JSON.parse(localStorage.getItem("customers")) || [];
 
 function applyLang(){
     const t = text[lang];
@@ -145,9 +155,11 @@ function applyLang(){
     document.getElementById("amount").placeholder = t.amount;
     document.getElementById("year").placeholder = t.year;
     document.getElementById("remark").placeholder = t.remark;
-    document.getElementById("addBtn").innerText = t.add;
     document.getElementById("exportBtn").innerText = t.export;
     document.getElementById("search").placeholder = t.search;
+    document.getElementById("cancelBtn").innerText = t.cancel;
+
+    document.getElementById("addBtn").innerText = editingIndex === null ? t.add : t.update;
 
     buildMonths();
     renderCustomers();
@@ -180,28 +192,68 @@ function buildMonths(){
     });
 }
 
-function addCustomer(){
-    const area = document.getElementById("area").value;
-    const name = document.getElementById("name").value;
-    const phone = document.getElementById("phone").value;
-    const amount = document.getElementById("amount").value || 0;
-    const year = document.getElementById("year").value;
-    const remark = document.getElementById("remark").value;
-
+function getFormData(){
     let months = [];
 
     for(let i=0;i<12;i++){
         months.push(document.getElementById(`month${i}`).value);
     }
 
-    customers.push({area,name,phone,amount,year,remark,months});
+    return {
+        area: document.getElementById("area").value,
+        name: document.getElementById("name").value,
+        phone: document.getElementById("phone").value,
+        amount: document.getElementById("amount").value || 0,
+        year: document.getElementById("year").value,
+        remark: document.getElementById("remark").value,
+        months: months
+    };
+}
+
+function saveCustomer(){
+    const data = getFormData();
+
+    if(editingIndex === null){
+        customers.push(data);
+        alert(text[lang].saved);
+    }else{
+        customers[editingIndex] = data;
+        editingIndex = null;
+        document.getElementById("cancelBtn").style.display = "none";
+        alert(text[lang].updated);
+    }
 
     localStorage.setItem("customers", JSON.stringify(customers));
-
     clearForm();
-    renderCustomers();
+    applyLang();
+}
 
-    alert(text[lang].saved);
+function editCustomer(index){
+    const c = customers[index];
+    editingIndex = index;
+
+    document.getElementById("area").value = c.area || "";
+    document.getElementById("name").value = c.name || "";
+    document.getElementById("phone").value = c.phone || "";
+    document.getElementById("amount").value = c.amount || "";
+    document.getElementById("year").value = c.year || "";
+    document.getElementById("remark").value = c.remark || "";
+
+    for(let i=0;i<12;i++){
+        document.getElementById(`month${i}`).value = c.months && c.months[i] ? c.months[i] : "不记录";
+    }
+
+    document.getElementById("addBtn").innerText = text[lang].update;
+    document.getElementById("cancelBtn").style.display = "block";
+
+    window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function cancelEdit(){
+    editingIndex = null;
+    clearForm();
+    document.getElementById("cancelBtn").style.display = "none";
+    document.getElementById("addBtn").innerText = text[lang].add;
 }
 
 function clearForm(){
@@ -236,11 +288,13 @@ function renderCustomers(){
 
         let unpaid = [];
 
-        c.months.forEach((m,i)=>{
-            if(m === "未结账"){
-                unpaid.push(monthNames[i]);
-            }
-        });
+        if(c.months){
+            c.months.forEach((m,i)=>{
+                if(m === "未结账"){
+                    unpaid.push(monthNames[i]);
+                }
+            });
+        }
 
         list.innerHTML += `
         <div class="customer">
@@ -254,6 +308,7 @@ function renderCustomers(){
 
             <div class="action-buttons">
                 <button onclick="sendWhatsApp(${index})">${t.whatsapp}</button>
+                <button onclick="editCustomer(${index})">${t.edit}</button>
                 <button onclick="deleteCustomer(${index})">${t.delete}</button>
             </div>
         </div>
@@ -264,10 +319,11 @@ function renderCustomers(){
 }
 
 function formatPhone(phone){
-    phone = String(phone).replace(/\D/g, "");
+    phone = String(phone).replace("https://wa.me/","").replace("http://wa.me/","");
+    phone = phone.replace(/\D/g, "");
 
     if(phone.startsWith("0")){
-        phone = "6" + phone;
+        return "6" + phone;
     }
 
     if(phone.startsWith("60")){
@@ -288,11 +344,13 @@ function sendWhatsApp(index){
 
     let unpaid = [];
 
-    c.months.forEach((m,i)=>{
-        if(m === "未结账"){
-            unpaid.push(monthNames[i]);
-        }
-    });
+    if(c.months){
+        c.months.forEach((m,i)=>{
+            if(m === "未结账"){
+                unpaid.push(monthNames[i]);
+            }
+        });
+    }
 
     let phone = formatPhone(c.phone);
 
@@ -307,6 +365,11 @@ function deleteCustomer(index){
     if(confirm(text[lang].confirmDelete)){
         customers.splice(index,1);
         localStorage.setItem("customers", JSON.stringify(customers));
+
+        if(editingIndex === index){
+            cancelEdit();
+        }
+
         renderCustomers();
     }
 }
@@ -317,11 +380,13 @@ function exportExcel(){
     customers.forEach(c=>{
         let unpaid = [];
 
-        c.months.forEach((m,i)=>{
-            if(m === "未结账"){
-                unpaid.push(monthNamesZh[i]);
-            }
-        });
+        if(c.months){
+            c.months.forEach((m,i)=>{
+                if(m === "未结账"){
+                    unpaid.push(monthNamesZh[i]);
+                }
+            });
+        }
 
         data.push({
             Area:c.area,
