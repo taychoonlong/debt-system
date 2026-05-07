@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>收账欠款记录系统</title>
+<title>Debt Collection Record System</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
 body{
-    font-family: Arial;
+    font-family: Arial, sans-serif;
     background:#f5f5f5;
     margin:0;
     padding:15px;
@@ -29,8 +29,13 @@ h1{
     color:#7a4900;
 }
 
+.lang-btn{
+    background:#333;
+    margin-bottom:15px;
+}
+
 .total{
-    font-size:24px;
+    font-size:22px;
     font-weight:bold;
     color:red;
     margin-bottom:20px;
@@ -51,10 +56,7 @@ button{
     color:white;
     border:none;
     cursor:pointer;
-}
-
-button:hover{
-    opacity:0.9;
+    font-weight:bold;
 }
 
 .month-grid{
@@ -78,17 +80,8 @@ button:hover{
     border-left:6px solid orange;
 }
 
-.customer h3{
-    margin:0;
-}
-
 .status-red{
     color:red;
-    font-weight:bold;
-}
-
-.status-green{
-    color:green;
     font-weight:bold;
 }
 
@@ -118,14 +111,16 @@ button:hover{
 
 <div class="container">
 
-<h1>收账欠款记录系统</h1>
+<button class="lang-btn" onclick="toggleLang()" id="langBtn">English</button>
+
+<h1 id="title">收账欠款记录系统</h1>
 
 <div class="total">
-总未收：RM <span id="totalAmount">0</span>
+<span id="totalText">总未收：</span>RM <span id="totalAmount">0.00</span>
 </div>
 
 <select id="area">
-<option value="">选择地区</option>
+<option value="" id="areaPlaceholder">选择地区</option>
 <option>KL</option>
 <option>Ipoh</option>
 <option>Johor</option>
@@ -134,19 +129,19 @@ button:hover{
 
 <input type="text" id="name" placeholder="客户名字">
 
-<input type="text" id="phone" placeholder="电话号码 例如 60123456789">
+<input type="text" id="phone" placeholder="电话号码，例如 0128298002">
 
 <input type="number" id="amount" placeholder="欠款金额 RM">
 
-<input type="number" id="year" placeholder="年份 例如 2026">
+<input type="number" id="year" placeholder="年份，例如 2026">
 
 <div class="month-grid" id="months"></div>
 
 <textarea id="remark" placeholder="备注"></textarea>
 
-<button onclick="addCustomer()">新增记录</button>
+<button onclick="addCustomer()" id="addBtn">新增记录</button>
 
-<button onclick="exportExcel()">导出Excel总结</button>
+<button onclick="exportExcel()" id="exportBtn">导出Excel总结</button>
 
 <div class="search">
 <input type="text" id="search" placeholder="搜索客户、电话、地区、年份" onkeyup="renderCustomers()">
@@ -157,36 +152,123 @@ button:hover{
 </div>
 
 <script>
+let lang = localStorage.getItem("lang") || "zh";
 
-const monthNames = [
-"1月","2月","3月","4月",
-"5月","6月","7月","8月",
-"9月","10月","11月","12月"
-];
+const text = {
+    zh:{
+        switch:"English",
+        title:"收账欠款记录系统",
+        total:"总未收：",
+        area:"选择地区",
+        name:"客户名字",
+        phone:"电话号码，例如 0128298002",
+        amount:"欠款金额 RM",
+        year:"年份，例如 2026",
+        remark:"备注",
+        add:"新增记录",
+        export:"导出Excel总结",
+        search:"搜索客户、电话、地区、年份",
+        paid:"结账",
+        unpaid:"未结账",
+        areaLabel:"地区",
+        phoneLabel:"电话",
+        amountLabel:"金额",
+        yearLabel:"年份",
+        unpaidMonth:"未结账月份",
+        remarkLabel:"备注",
+        whatsapp:"WhatsApp提醒",
+        delete:"删除",
+        saved:"记录成功",
+        confirmDelete:"确定删除？",
+        noUnpaid:"无",
+        message:"您好，提醒您：您的款项尚未结清。未结账月份："
+    },
+    en:{
+        switch:"中文",
+        title:"Debt Collection Record System",
+        total:"Total Unpaid:",
+        area:"Select Area",
+        name:"Customer Name",
+        phone:"Phone Number, e.g. 0128298002",
+        amount:"Debt Amount RM",
+        year:"Year, e.g. 2026",
+        remark:"Remark",
+        add:"Add Record",
+        export:"Export Excel Summary",
+        search:"Search customer, phone, area, year",
+        paid:"Paid",
+        unpaid:"Unpaid",
+        areaLabel:"Area",
+        phoneLabel:"Phone",
+        amountLabel:"Amount",
+        yearLabel:"Year",
+        unpaidMonth:"Unpaid Months",
+        remarkLabel:"Remark",
+        whatsapp:"WhatsApp Reminder",
+        delete:"Delete",
+        saved:"Record Saved",
+        confirmDelete:"Confirm delete?",
+        noUnpaid:"None",
+        message:"Hello, reminder: your payment is still outstanding. Unpaid months: "
+    }
+};
 
-const monthDiv = document.getElementById("months");
-
-monthNames.forEach((m,i)=>{
-    monthDiv.innerHTML += `
-    <div class="month-box">
-        <label>${m}</label>
-        <select id="month${i}">
-            <option>不记录</option>
-            <option>未结账</option>
-            <option>结账</option>
-        </select>
-    </div>
-    `;
-});
+const monthNamesZh = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
+const monthNamesEn = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
 let customers = JSON.parse(localStorage.getItem("customers")) || [];
 
-function addCustomer(){
+function applyLang(){
+    const t = text[lang];
 
+    document.getElementById("langBtn").innerText = t.switch;
+    document.getElementById("title").innerText = t.title;
+    document.getElementById("totalText").innerText = t.total;
+    document.getElementById("areaPlaceholder").innerText = t.area;
+    document.getElementById("name").placeholder = t.name;
+    document.getElementById("phone").placeholder = t.phone;
+    document.getElementById("amount").placeholder = t.amount;
+    document.getElementById("year").placeholder = t.year;
+    document.getElementById("remark").placeholder = t.remark;
+    document.getElementById("addBtn").innerText = t.add;
+    document.getElementById("exportBtn").innerText = t.export;
+    document.getElementById("search").placeholder = t.search;
+
+    buildMonths();
+    renderCustomers();
+}
+
+function toggleLang(){
+    lang = lang === "zh" ? "en" : "zh";
+    localStorage.setItem("lang", lang);
+    applyLang();
+}
+
+function buildMonths(){
+    const monthDiv = document.getElementById("months");
+    const names = lang === "zh" ? monthNamesZh : monthNamesEn;
+    const t = text[lang];
+
+    monthDiv.innerHTML = "";
+
+    names.forEach((m,i)=>{
+        monthDiv.innerHTML += `
+        <div class="month-box">
+            <label>${m}</label>
+            <select id="month${i}">
+                <option value="未结账">${t.unpaid}</option>
+                <option value="结账">${t.paid}</option>
+            </select>
+        </div>
+        `;
+    });
+}
+
+function addCustomer(){
     const area = document.getElementById("area").value;
     const name = document.getElementById("name").value;
     const phone = document.getElementById("phone").value;
-    const amount = document.getElementById("amount").value;
+    const amount = document.getElementById("amount").value || 0;
     const year = document.getElementById("year").value;
     const remark = document.getElementById("remark").value;
 
@@ -206,30 +288,39 @@ function addCustomer(){
         months
     });
 
-    localStorage.setItem("customers",JSON.stringify(customers));
+    localStorage.setItem("customers", JSON.stringify(customers));
 
+    clearForm();
     renderCustomers();
 
-    alert("记录成功");
+    alert(text[lang].saved);
+}
+
+function clearForm(){
+    document.getElementById("area").value = "";
+    document.getElementById("name").value = "";
+    document.getElementById("phone").value = "";
+    document.getElementById("amount").value = "";
+    document.getElementById("year").value = "";
+    document.getElementById("remark").value = "";
+
+    for(let i=0;i<12;i++){
+        document.getElementById(`month${i}`).value = "未结账";
+    }
 }
 
 function renderCustomers(){
-
     const list = document.getElementById("customerList");
     const keyword = document.getElementById("search").value.toLowerCase();
+    const t = text[lang];
+    const monthNames = lang === "zh" ? monthNamesZh : monthNamesEn;
 
     list.innerHTML = "";
 
     let total = 0;
 
     customers.forEach((c,index)=>{
-
-        let searchText = `
-        ${c.name}
-        ${c.phone}
-        ${c.area}
-        ${c.year}
-        `.toLowerCase();
+        let searchText = `${c.name} ${c.phone} ${c.area} ${c.year}`.toLowerCase();
 
         if(!searchText.includes(keyword)) return;
 
@@ -238,47 +329,25 @@ function renderCustomers(){
         let unpaid = [];
 
         c.months.forEach((m,i)=>{
-            if(m==="未结账"){
+            if(m === "未结账"){
                 unpaid.push(monthNames[i]);
             }
         });
 
-        let message = `您好，提醒您 ${c.year} ${unpaid.join("、")} 款项尚未结清，谢谢。`;
-
         list.innerHTML += `
         <div class="customer">
-
-            <h3>${c.name}</h3>
-
-            <p>地区：${c.area}</p>
-
-            <p>电话：${c.phone}</p>
-
-            <p>金额：RM ${c.amount}</p>
-
-            <p>年份：${c.year}</p>
-
-            <p>
-            未结账月份：
-            <span class="status-red">
-            ${unpaid.join("、") || "无"}
-            </span>
-            </p>
-
-            <p>备注：${c.remark || "-"}</p>
+            <h3>${c.name || "-"}</h3>
+            <p>${t.areaLabel}: ${c.area || "-"}</p>
+            <p>${t.phoneLabel}: ${c.phone || "-"}</p>
+            <p>${t.amountLabel}: RM ${Number(c.amount).toFixed(2)}</p>
+            <p>${t.yearLabel}: ${c.year || "-"}</p>
+            <p>${t.unpaidMonth}: <span class="status-red">${unpaid.join("、") || t.noUnpaid}</span></p>
+            <p>${t.remarkLabel}: ${c.remark || "-"}</p>
 
             <div class="action-buttons">
-
-            <button onclick="sendWhatsApp('${c.phone}','${message}')">
-            WhatsApp提醒
-            </button>
-
-            <button onclick="deleteCustomer(${index})">
-            删除
-            </button>
-
+                <button onclick="sendWhatsApp(${index})">${t.whatsapp}</button>
+                <button onclick="deleteCustomer(${index})">${t.delete}</button>
             </div>
-
         </div>
         `;
     });
@@ -286,61 +355,85 @@ function renderCustomers(){
     document.getElementById("totalAmount").innerText = total.toFixed(2);
 }
 
+function formatPhone(phone){
+    phone = String(phone).replace(/\D/g, "");
+
+    if(phone.startsWith("0")){
+        phone = "6" + phone;
+    }
+
+    if(phone.startsWith("60")){
+        return phone;
+    }
+
+    if(phone.startsWith("1")){
+        return "60" + phone;
+    }
+
+    return phone;
+}
+
+function sendWhatsApp(index){
+    const c = customers[index];
+    const monthNames = lang === "zh" ? monthNamesZh : monthNamesEn;
+    const t = text[lang];
+
+    let unpaid = [];
+
+    c.months.forEach((m,i)=>{
+        if(m === "未结账"){
+            unpaid.push(monthNames[i]);
+        }
+    });
+
+    let phone = formatPhone(c.phone);
+
+    let message = `${t.message}${c.year} ${unpaid.join("、")}。\n\n${t.amountLabel}: RM ${Number(c.amount).toFixed(2)}\n\nThank you.`;
+
+    let url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+
+    window.location.href = url;
+}
+
 function deleteCustomer(index){
-
-    if(confirm("确定删除？")){
-
+    if(confirm(text[lang].confirmDelete)){
         customers.splice(index,1);
-
-        localStorage.setItem("customers",JSON.stringify(customers));
-
+        localStorage.setItem("customers", JSON.stringify(customers));
         renderCustomers();
     }
 }
 
-function sendWhatsApp(phone,message){
-
-    let url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-
-    window.open(url,"_blank");
-}
-
 function exportExcel(){
-
     let data = [];
 
     customers.forEach(c=>{
-
         let unpaid = [];
 
         c.months.forEach((m,i)=>{
-            if(m==="未结账"){
-                unpaid.push(monthNames[i]);
+            if(m === "未结账"){
+                unpaid.push(monthNamesZh[i]);
             }
         });
 
         data.push({
-            地区:c.area,
-            客户:c.name,
-            电话:c.phone,
-            金额:c.amount,
-            年份:c.year,
-            未结账月份:unpaid.join("、"),
-            备注:c.remark
+            Area:c.area,
+            Customer:c.name,
+            Phone:c.phone,
+            Amount:c.amount,
+            Year:c.year,
+            Unpaid_Months:unpaid.join("、"),
+            Remark:c.remark
         });
     });
 
     let ws = XLSX.utils.json_to_sheet(data);
-
     let wb = XLSX.utils.book_new();
 
-    XLSX.utils.book_append_sheet(wb,ws,"收账总结");
-
-    XLSX.writeFile(wb,"收账总结.xlsx");
+    XLSX.utils.book_append_sheet(wb, ws, "Debt Summary");
+    XLSX.writeFile(wb, "Debt-Summary.xlsx");
 }
 
-renderCustomers();
-
+applyLang();
 </script>
 
 </body>
