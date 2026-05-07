@@ -6,172 +6,38 @@
 <title>Debt Collection Record System</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <style>
-body{
-    font-family:Arial,sans-serif;
-    background:#f5f5f5;
-    margin:0;
-    padding:15px
-}
-
-.container{
-    max-width:1000px;
-    margin:auto;
-    background:white;
-    padding:20px;
-    border-radius:15px
-}
-
-h1{
-    text-align:center;
-    color:#7a4900
-}
-
-.lang-btn{
-    background:#333;
-    margin-bottom:15px
-}
-
-.sync-status{
-    background:#eef7ff;
-    color:#0066aa;
-    padding:10px;
-    border-radius:10px;
-    margin-bottom:15px;
-    font-weight:bold
-}
-
-.total{
-    font-size:28px;
-    font-weight:bold;
-    color:red;
-    margin-bottom:20px
-}
-
-input,select,textarea,button{
-    width:100%;
-    padding:12px;
-    margin-top:10px;
-    border-radius:10px;
-    border:1px solid #ccc;
-    box-sizing:border-box;
-    font-size:16px
-}
-
-button{
-    background:#7a4900;
-    color:white;
-    border:none;
-    cursor:pointer;
-    font-weight:bold
-}
-
-.cancel-btn{
-    background:#777;
-    display:none
-}
-
-.month-grid{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:10px;
-    margin-top:15px
-}
-
-.month-box{
-    background:#fafafa;
-    padding:10px;
-    border-radius:10px
-}
-
-.month-box label{
-    font-weight:bold
-}
-
-.customer{
-    background:#fff8ef;
-    padding:20px;
-    margin-top:20px;
-    border-radius:15px;
-    border-left:6px solid orange
-}
-
-.customer h3{
-    font-size:32px;
-    margin-bottom:15px;
-    color:#111
-}
-
-.customer p{
-    font-size:22px;
-    margin:16px 0;
-    line-height:1.6
-}
-
-/* 金额放大放粗红色 */
-.big-red-amount{
-    font-size:40px;
-    font-weight:900;
-    color:red;
-    line-height:1.3
-}
-
-.status-red{
-    color:red;
-    font-weight:900;
-    font-size:28px;
-    line-height:1.5
-}
-
-.action-buttons{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:10px;
-    margin-top:20px
-}
-
-.search{
-    margin-top:30px
-}
-
-.small-text{
-    font-size:13px;
-    color:#777;
-    margin-top:5px
-}
-
+body{font-family:Arial,sans-serif;background:#f5f5f5;margin:0;padding:15px}
+.container{max-width:1000px;margin:auto;background:white;padding:20px;border-radius:15px}
+h1{text-align:center;color:#7a4900}
+.lang-btn{background:#333;margin-bottom:15px}
+.sync-status{background:#eef7ff;color:#0066aa;padding:10px;border-radius:10px;margin-bottom:15px;font-weight:bold}
+.total{font-size:28px;font-weight:bold;color:red;margin-bottom:20px}
+input,select,textarea,button{width:100%;padding:12px;margin-top:10px;border-radius:10px;border:1px solid #ccc;box-sizing:border-box;font-size:16px}
+button{background:#7a4900;color:white;border:none;cursor:pointer;font-weight:bold}
+.cancel-btn{background:#777;display:none}
+.month-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:15px}
+.month-box{background:#fafafa;padding:10px;border-radius:10px}
+.month-box label{font-weight:bold}
+.customer{background:#fff8ef;padding:20px;margin-top:20px;border-radius:15px;border-left:6px solid orange}
+.customer h3{font-size:36px;margin-bottom:15px;color:red;font-weight:900}
+.customer p{font-size:22px;margin:16px 0;line-height:1.6}
+.big-red-amount{font-size:40px;font-weight:900;color:red;line-height:1.3}
+.status-red{color:red;font-weight:900;font-size:28px;line-height:1.5}
+.action-buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
+.search{margin-top:30px}
+.small-text{font-size:13px;color:#777;margin-top:5px}
 @media(max-width:600px){
-
-    .action-buttons{
-        grid-template-columns:1fr
-    }
-
-    .customer h3{
-        font-size:28px
-    }
-
-    .customer p{
-        font-size:20px
-    }
-
-    .big-red-amount{
-        font-size:34px
-    }
-
-    .status-red{
-        font-size:24px
-    }
+.action-buttons{grid-template-columns:1fr}
+.customer h3{font-size:30px}
+.customer p{font-size:20px}
+.big-red-amount{font-size:34px}
+.status-red{font-size:24px}
 }
-
-@media(min-width:768px){
-    .month-grid{
-        grid-template-columns:repeat(4,1fr)
-    }
-}
+@media(min-width:768px){.month-grid{grid-template-columns:repeat(4,1fr)}}
 </style>
 </head>
 
@@ -202,9 +68,7 @@ RM <span id="totalAmount">0.00</span>
 
 <input type="number" id="amount" placeholder="欠款金额 RM" readonly>
 
-<div class="small-text" id="amountHint">
-欠款金额会自动根据每个月未结账金额加总
-</div>
+<div class="small-text" id="amountHint">欠款金额会自动根据每个月未结账金额加总</div>
 
 <input type="number" id="year" placeholder="年份，例如 2026">
 
@@ -213,20 +77,11 @@ RM <span id="totalAmount">0.00</span>
 <textarea id="remark" placeholder="备注"></textarea>
 
 <button onclick="saveCustomer()" id="addBtn">新增记录</button>
-
-<button onclick="cancelEdit()" id="cancelBtn" class="cancel-btn">
-取消更改
-</button>
-
-<button onclick="exportExcel()" id="exportBtn">
-导出Excel总结
-</button>
+<button onclick="cancelEdit()" id="cancelBtn" class="cancel-btn">取消更改</button>
+<button onclick="exportExcel()" id="exportBtn">导出Excel总结</button>
 
 <div class="search">
-<input type="text"
-id="search"
-placeholder="搜索客户、电话、地区、年份"
-onkeyup="renderCustomers()">
+<input type="text" id="search" placeholder="搜索客户、电话、地区、年份" onkeyup="renderCustomers()">
 </div>
 
 <div id="customerList"></div>
@@ -263,143 +118,88 @@ function toggleLang(){
 }
 
 function buildMonths(){
-
     const monthDiv = document.getElementById("months");
-
     monthDiv.innerHTML = "";
 
-    const names = lang === "zh"
-        ? monthNamesZh
-        : monthNamesEn;
+    const names = lang === "zh" ? monthNamesZh : monthNamesEn;
 
     names.forEach((m,i)=>{
-
         monthDiv.innerHTML += `
         <div class="month-box">
-
             <label>${m}</label>
-
             <select id="month${i}" onchange="calculateAmount()">
                 <option value="不记录">不记录</option>
                 <option value="未结账">未结账</option>
                 <option value="结账">结账</option>
             </select>
-
-            <input
-                type="number"
-                id="monthAmount${i}"
-                placeholder="本月欠款 RM"
-                oninput="calculateAmount()"
-            >
-
+            <input type="number" id="monthAmount${i}" placeholder="本月欠款 RM" oninput="calculateAmount()">
         </div>
         `;
     });
 }
 
 function calculateAmount(){
-
     let total = 0;
 
     for(let i=0;i<12;i++){
-
-        const status =
-            document.getElementById(`month${i}`).value;
-
-        const amount =
-            Number(document.getElementById(`monthAmount${i}`).value || 0);
+        const status = document.getElementById(`month${i}`).value;
+        const amount = Number(document.getElementById(`monthAmount${i}`).value || 0);
 
         if(status === "未结账"){
             total += amount;
         }
     }
 
-    document.getElementById("amount").value =
-        total.toFixed(2);
+    document.getElementById("amount").value = total.toFixed(2);
 }
 
 function getFormData(){
-
     let months = [];
     let monthAmounts = [];
 
     for(let i=0;i<12;i++){
-
-        months.push(
-            document.getElementById(`month${i}`).value
-        );
-
-        monthAmounts.push(
-            Number(document.getElementById(`monthAmount${i}`).value || 0)
-        );
+        months.push(document.getElementById(`month${i}`).value);
+        monthAmounts.push(Number(document.getElementById(`monthAmount${i}`).value || 0));
     }
 
     calculateAmount();
 
     return {
-
-        area:
-            document.getElementById("area").value,
-
-        name:
-            document.getElementById("name").value,
-
-        phone:
-            document.getElementById("phone").value,
-
-        amount:
-            Number(document.getElementById("amount").value || 0),
-
-        year:
-            document.getElementById("year").value,
-
-        remark:
-            document.getElementById("remark").value,
-
+        area: document.getElementById("area").value,
+        name: document.getElementById("name").value,
+        phone: document.getElementById("phone").value,
+        amount: Number(document.getElementById("amount").value || 0),
+        year: document.getElementById("year").value,
+        remark: document.getElementById("remark").value,
         months,
         monthAmounts,
-
-        updatedAt:
-            firebase.firestore.FieldValue.serverTimestamp()
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 }
 
 async function saveCustomer(){
-
     const data = getFormData();
 
     try{
-
         if(editingId === null){
-
-            data.createdAt =
-                firebase.firestore.FieldValue.serverTimestamp();
-
+            data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
             await customersRef.add(data);
-
             alert("记录成功");
-
         }else{
-
             await customersRef.doc(editingId).update(data);
-
             alert("记录已更新");
-
             editingId = null;
         }
 
         clearForm();
 
     }catch(error){
-
         console.error(error);
-
         alert("保存失败");
     }
 }
 
 function clearForm(){
-
     document.getElementById("area").value = "";
     document.getElementById("name").value = "";
     document.getElementById("phone").value = "";
@@ -408,30 +208,19 @@ function clearForm(){
     document.getElementById("remark").value = "";
 
     for(let i=0;i<12;i++){
-
         document.getElementById(`month${i}`).value = "不记录";
         document.getElementById(`monthAmount${i}`).value = "";
     }
 }
 
 function getUnpaidDetails(c, monthNames){
-
     let unpaid = [];
 
     if(c.months){
-
         c.months.forEach((m,i)=>{
-
             if(m === "未结账"){
-
-                const amount =
-                    c.monthAmounts && c.monthAmounts[i]
-                    ? Number(c.monthAmounts[i])
-                    : 0;
-
-                unpaid.push(
-                    `${monthNames[i]} RM ${amount.toFixed(2)}`
-                );
+                const amount = c.monthAmounts && c.monthAmounts[i] ? Number(c.monthAmounts[i]) : 0;
+                unpaid.push(`${monthNames[i]} RM ${amount.toFixed(2)}`);
             }
         });
     }
@@ -440,42 +229,28 @@ function getUnpaidDetails(c, monthNames){
 }
 
 function renderCustomers(){
-
-    const list =
-        document.getElementById("customerList");
-
-    const keyword =
-        document.getElementById("search").value.toLowerCase();
-
-    const monthNames =
-        lang === "zh"
-        ? monthNamesZh
-        : monthNamesEn;
+    const list = document.getElementById("customerList");
+    const keyword = document.getElementById("search").value.toLowerCase();
+    const monthNames = lang === "zh" ? monthNamesZh : monthNamesEn;
 
     list.innerHTML = "";
 
     let total = 0;
 
     customers.forEach((c,index)=>{
-
-        let searchText =
-            `${c.name} ${c.phone} ${c.area} ${c.year}`.toLowerCase();
+        let searchText = `${c.name} ${c.phone} ${c.area} ${c.year}`.toLowerCase();
 
         if(!searchText.includes(keyword)) return;
 
         total += Number(c.amount || 0);
 
-        let unpaid =
-            getUnpaidDetails(c, monthNames);
+        let unpaid = getUnpaidDetails(c, monthNames);
 
         list.innerHTML += `
-
         <div class="customer">
-
             <h3>${c.name || "-"}</h3>
 
             <p>地区: ${c.area || "-"}</p>
-
             <p>电话: ${c.phone || "-"}</p>
 
             <p class="big-red-amount">
@@ -494,31 +269,19 @@ function renderCustomers(){
             <p>备注: ${c.remark || "-"}</p>
 
             <div class="action-buttons">
-
-                <button onclick="sendWhatsApp(${index})">
-                    WhatsApp提醒
-                </button>
-
-                <button onclick="editCustomer(${index})">
-                    更改
-                </button>
-
-                <button onclick="deleteCustomer(${index})">
-                    删除
-                </button>
-
+                <button onclick="sendWhatsApp(${index})">WhatsApp提醒</button>
+                <button onclick="editCustomer(${index})">更改</button>
+                <button onclick="deleteCustomer(${index})">删除</button>
             </div>
-
         </div>
         `;
     });
 
-    document.getElementById("totalAmount").innerText =
-        total.toFixed(2);
+    document.getElementById("totalAmount").innerText = total.toFixed(2);
+    document.getElementById("syncStatus").innerText = "云端同步已连接";
 }
 
 function formatPhone(phone){
-
     phone = String(phone)
         .replace("https://wa.me/","")
         .replace("http://wa.me/","");
@@ -537,19 +300,10 @@ function formatPhone(phone){
 }
 
 function sendWhatsApp(index){
-
     const c = customers[index];
-
-    const monthNames =
-        lang === "zh"
-        ? monthNamesZh
-        : monthNamesEn;
-
-    let unpaid =
-        getUnpaidDetails(c, monthNames);
-
-    let phone =
-        formatPhone(c.phone);
+    const monthNames = lang === "zh" ? monthNamesZh : monthNamesEn;
+    let unpaid = getUnpaidDetails(c, monthNames);
+    let phone = formatPhone(c.phone);
 
     let message =
 `您好，提醒您：您的款项尚未结清。
@@ -564,14 +318,11 @@ RM ${Number(c.amount || 0).toFixed(2)}
 
 Thank you.`;
 
-    let url =
-`https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-
+    let url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
     window.location.href = url;
 }
 
 function editCustomer(index){
-
     const c = customers[index];
 
     editingId = c.id;
@@ -584,58 +335,39 @@ function editCustomer(index){
     document.getElementById("remark").value = c.remark || "";
 
     for(let i=0;i<12;i++){
-
-        document.getElementById(`month${i}`).value =
-            c.months[i] || "不记录";
-
-        document.getElementById(`monthAmount${i}`).value =
-            c.monthAmounts[i] || "";
+        document.getElementById(`month${i}`).value = c.months[i] || "不记录";
+        document.getElementById(`monthAmount${i}`).value = c.monthAmounts[i] || "";
     }
 
     calculateAmount();
 
     document.getElementById("cancelBtn").style.display = "block";
 
-    window.scrollTo({
-        top:0,
-        behavior:"smooth"
-    });
+    window.scrollTo({top:0,behavior:"smooth"});
 }
 
 function cancelEdit(){
-
     editingId = null;
-
     clearForm();
-
     document.getElementById("cancelBtn").style.display = "none";
 }
 
 async function deleteCustomer(index){
-
     if(confirm("确定删除？")){
-
         try{
-
             await customersRef.doc(customers[index].id).delete();
-
         }catch(error){
-
             console.error(error);
-
             alert("删除失败");
         }
     }
 }
 
 function exportExcel(){
-
     let data = [];
 
     customers.forEach(c=>{
-
-        let unpaid =
-            getUnpaidDetails(c, monthNamesZh);
+        let unpaid = getUnpaidDetails(c, monthNamesZh);
 
         data.push({
             Area:c.area,
@@ -648,24 +380,17 @@ function exportExcel(){
         });
     });
 
-    let ws =
-        XLSX.utils.json_to_sheet(data);
-
-    let wb =
-        XLSX.utils.book_new();
+    let ws = XLSX.utils.json_to_sheet(data);
+    let wb = XLSX.utils.book_new();
 
     XLSX.utils.book_append_sheet(wb, ws, "Debt Summary");
-
     XLSX.writeFile(wb, "Debt-Summary.xlsx");
 }
 
-customersRef.orderBy("createdAt","desc")
-.onSnapshot(snapshot=>{
-
+customersRef.orderBy("createdAt","desc").onSnapshot(snapshot=>{
     customers = [];
 
     snapshot.forEach(doc=>{
-
         customers.push({
             id:doc.id,
             ...doc.data()
