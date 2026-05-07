@@ -17,10 +17,12 @@ button{background:#7a4900;color:white;border:none;cursor:pointer;font-weight:bol
 .cancel-btn{background:#777;display:none}
 .month-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:15px}
 .month-box{background:#fafafa;padding:10px;border-radius:10px}
+.month-box label{font-weight:bold}
 .customer{background:#fff8ef;padding:15px;margin-top:20px;border-radius:15px;border-left:6px solid orange}
 .status-red{color:red;font-weight:bold}
 .action-buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
 .search{margin-top:30px}
+.small-text{font-size:13px;color:#777;margin-top:5px}
 @media(max-width:600px){.action-buttons{grid-template-columns:1fr}}
 @media(min-width:768px){.month-grid{grid-template-columns:repeat(4,1fr)}}
 </style>
@@ -47,7 +49,10 @@ button{background:#7a4900;color:white;border:none;cursor:pointer;font-weight:bol
 
 <input type="text" id="name" placeholder="客户名字">
 <input type="text" id="phone" placeholder="电话号码，例如 0128298002">
-<input type="number" id="amount" placeholder="欠款金额 RM">
+
+<input type="number" id="amount" placeholder="欠款金额 RM" readonly>
+<div class="small-text" id="amountHint">欠款金额会自动根据每个月未结账金额加总</div>
+
 <input type="number" id="year" placeholder="年份，例如 2026">
 
 <div class="month-grid" id="months"></div>
@@ -80,6 +85,7 @@ const text = {
         name:"客户名字",
         phone:"电话号码，例如 0128298002",
         amount:"欠款金额 RM",
+        amountHint:"欠款金额会自动根据每个月未结账金额加总",
         year:"年份，例如 2026",
         remark:"备注",
         add:"新增记录",
@@ -90,6 +96,7 @@ const text = {
         notRecord:"不记录",
         paid:"结账",
         unpaid:"未结账",
+        monthlyAmount:"本月欠款 RM",
         areaLabel:"地区",
         phoneLabel:"电话",
         amountLabel:"金额",
@@ -103,7 +110,7 @@ const text = {
         updated:"记录已更新",
         confirmDelete:"确定删除？",
         noUnpaid:"无",
-        message:"您好，提醒您：您的款项尚未结清。未结账月份："
+        message:"您好，提醒您：您的款项尚未结清。"
     },
     en:{
         switch:"中文",
@@ -113,6 +120,7 @@ const text = {
         name:"Customer Name",
         phone:"Phone Number, e.g. 0128298002",
         amount:"Debt Amount RM",
+        amountHint:"Debt amount is automatically calculated from unpaid monthly amounts",
         year:"Year, e.g. 2026",
         remark:"Remark",
         add:"Add Record",
@@ -123,6 +131,7 @@ const text = {
         notRecord:"Not Record",
         paid:"Paid",
         unpaid:"Unpaid",
+        monthlyAmount:"Monthly Debt RM",
         areaLabel:"Area",
         phoneLabel:"Phone",
         amountLabel:"Amount",
@@ -136,7 +145,7 @@ const text = {
         updated:"Record Updated",
         confirmDelete:"Confirm delete?",
         noUnpaid:"None",
-        message:"Hello, reminder: your payment is still outstanding. Unpaid months: "
+        message:"Hello, reminder: your payment is still outstanding."
     }
 };
 
@@ -153,16 +162,17 @@ function applyLang(){
     document.getElementById("name").placeholder = t.name;
     document.getElementById("phone").placeholder = t.phone;
     document.getElementById("amount").placeholder = t.amount;
+    document.getElementById("amountHint").innerText = t.amountHint;
     document.getElementById("year").placeholder = t.year;
     document.getElementById("remark").placeholder = t.remark;
     document.getElementById("exportBtn").innerText = t.export;
     document.getElementById("search").placeholder = t.search;
     document.getElementById("cancelBtn").innerText = t.cancel;
-
     document.getElementById("addBtn").innerText = editingIndex === null ? t.add : t.update;
 
     buildMonths();
     renderCustomers();
+    calculateAmount();
 }
 
 function toggleLang(){
@@ -176,28 +186,64 @@ function buildMonths(){
     const names = lang === "zh" ? monthNamesZh : monthNamesEn;
     const t = text[lang];
 
+    let oldMonths = [];
+    let oldAmounts = [];
+
+    for(let i=0;i<12;i++){
+        const statusEl = document.getElementById(`month${i}`);
+        const amountEl = document.getElementById(`monthAmount${i}`);
+
+        oldMonths[i] = statusEl ? statusEl.value : "不记录";
+        oldAmounts[i] = amountEl ? amountEl.value : "";
+    }
+
     monthDiv.innerHTML = "";
 
     names.forEach((m,i)=>{
         monthDiv.innerHTML += `
         <div class="month-box">
             <label>${m}</label>
-            <select id="month${i}">
+            <select id="month${i}" onchange="calculateAmount()">
                 <option value="不记录">${t.notRecord}</option>
                 <option value="未结账">${t.unpaid}</option>
                 <option value="结账">${t.paid}</option>
             </select>
+            <input type="number" id="monthAmount${i}" placeholder="${t.monthlyAmount}" oninput="calculateAmount()">
         </div>
         `;
     });
+
+    for(let i=0;i<12;i++){
+        document.getElementById(`month${i}`).value = oldMonths[i] || "不记录";
+        document.getElementById(`monthAmount${i}`).value = oldAmounts[i] || "";
+    }
+}
+
+function calculateAmount(){
+    let total = 0;
+
+    for(let i=0;i<12;i++){
+        const status = document.getElementById(`month${i}`)?.value;
+        const amount = Number(document.getElementById(`monthAmount${i}`)?.value || 0);
+
+        if(status === "未结账"){
+            total += amount;
+        }
+    }
+
+    document.getElementById("amount").value = total.toFixed(2);
 }
 
 function getFormData(){
     let months = [];
+    let monthAmounts = [];
 
     for(let i=0;i<12;i++){
         months.push(document.getElementById(`month${i}`).value);
+        monthAmounts.push(Number(document.getElementById(`monthAmount${i}`).value || 0));
     }
+
+    calculateAmount();
 
     return {
         area: document.getElementById("area").value,
@@ -206,7 +252,8 @@ function getFormData(){
         amount: document.getElementById("amount").value || 0,
         year: document.getElementById("year").value,
         remark: document.getElementById("remark").value,
-        months: months
+        months: months,
+        monthAmounts: monthAmounts
     };
 }
 
@@ -241,7 +288,10 @@ function editCustomer(index){
 
     for(let i=0;i<12;i++){
         document.getElementById(`month${i}`).value = c.months && c.months[i] ? c.months[i] : "不记录";
+        document.getElementById(`monthAmount${i}`).value = c.monthAmounts && c.monthAmounts[i] ? c.monthAmounts[i] : "";
     }
+
+    calculateAmount();
 
     document.getElementById("addBtn").innerText = text[lang].update;
     document.getElementById("cancelBtn").style.display = "block";
@@ -260,13 +310,29 @@ function clearForm(){
     document.getElementById("area").value = "";
     document.getElementById("name").value = "";
     document.getElementById("phone").value = "";
-    document.getElementById("amount").value = "";
+    document.getElementById("amount").value = "0.00";
     document.getElementById("year").value = "";
     document.getElementById("remark").value = "";
 
     for(let i=0;i<12;i++){
         document.getElementById(`month${i}`).value = "不记录";
+        document.getElementById(`monthAmount${i}`).value = "";
     }
+}
+
+function getUnpaidDetails(c, monthNames){
+    let unpaid = [];
+
+    if(c.months){
+        c.months.forEach((m,i)=>{
+            if(m === "未结账"){
+                const amount = c.monthAmounts && c.monthAmounts[i] ? Number(c.monthAmounts[i]) : 0;
+                unpaid.push(`${monthNames[i]} RM ${amount.toFixed(2)}`);
+            }
+        });
+    }
+
+    return unpaid;
 }
 
 function renderCustomers(){
@@ -286,15 +352,7 @@ function renderCustomers(){
 
         total += Number(c.amount);
 
-        let unpaid = [];
-
-        if(c.months){
-            c.months.forEach((m,i)=>{
-                if(m === "未结账"){
-                    unpaid.push(monthNames[i]);
-                }
-            });
-        }
+        let unpaid = getUnpaidDetails(c, monthNames);
 
         list.innerHTML += `
         <div class="customer">
@@ -342,19 +400,11 @@ function sendWhatsApp(index){
     const monthNames = lang === "zh" ? monthNamesZh : monthNamesEn;
     const t = text[lang];
 
-    let unpaid = [];
-
-    if(c.months){
-        c.months.forEach((m,i)=>{
-            if(m === "未结账"){
-                unpaid.push(monthNames[i]);
-            }
-        });
-    }
+    let unpaid = getUnpaidDetails(c, monthNames);
 
     let phone = formatPhone(c.phone);
 
-    let message = `${t.message}${c.year} ${unpaid.join("、") || t.noUnpaid}。\n\n${t.amountLabel}: RM ${Number(c.amount).toFixed(2)}\n\nThank you.`;
+    let message = `${t.message}\n\n${t.yearLabel}: ${c.year || "-"}\n${t.unpaidMonth}: ${unpaid.join("、") || t.noUnpaid}\n${t.amountLabel}: RM ${Number(c.amount).toFixed(2)}\n\nThank you.`;
 
     let url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 
@@ -378,25 +428,24 @@ function exportExcel(){
     let data = [];
 
     customers.forEach(c=>{
-        let unpaid = [];
+        let unpaid = getUnpaidDetails(c, monthNamesZh);
 
-        if(c.months){
-            c.months.forEach((m,i)=>{
-                if(m === "未结账"){
-                    unpaid.push(monthNamesZh[i]);
-                }
-            });
-        }
-
-        data.push({
+        let row = {
             Area:c.area,
             Customer:c.name,
             Phone:c.phone,
-            Amount:c.amount,
+            Total_Amount:c.amount,
             Year:c.year,
-            Unpaid_Months:unpaid.join("、"),
+            Unpaid_Details:unpaid.join("、"),
             Remark:c.remark
+        };
+
+        monthNamesZh.forEach((m,i)=>{
+            row[`${m}_Status`] = c.months && c.months[i] ? c.months[i] : "";
+            row[`${m}_Amount`] = c.monthAmounts && c.monthAmounts[i] ? c.monthAmounts[i] : 0;
         });
+
+        data.push(row);
     });
 
     let ws = XLSX.utils.json_to_sheet(data);
