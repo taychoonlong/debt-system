@@ -3,112 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Debt Collection Record System</title>
-
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
-body{
-    font-family: Arial, sans-serif;
-    background:#f5f5f5;
-    margin:0;
-    padding:15px;
-}
-
-.container{
-    max-width:1000px;
-    margin:auto;
-    background:white;
-    padding:20px;
-    border-radius:15px;
-}
-
-h1{
-    text-align:center;
-    color:#7a4900;
-}
-
-.lang-btn{
-    background:#333;
-    margin-bottom:15px;
-}
-
-.total{
-    font-size:22px;
-    font-weight:bold;
-    color:red;
-    margin-bottom:20px;
-}
-
-input,select,textarea,button{
-    width:100%;
-    padding:12px;
-    margin-top:10px;
-    border-radius:10px;
-    border:1px solid #ccc;
-    box-sizing:border-box;
-    font-size:16px;
-}
-
-button{
-    background:#7a4900;
-    color:white;
-    border:none;
-    cursor:pointer;
-    font-weight:bold;
-}
-
-.month-grid{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:10px;
-    margin-top:15px;
-}
-
-.month-box{
-    background:#fafafa;
-    padding:10px;
-    border-radius:10px;
-}
-
-.customer{
-    background:#fff8ef;
-    padding:15px;
-    margin-top:20px;
-    border-radius:15px;
-    border-left:6px solid orange;
-}
-
-.status-red{
-    color:red;
-    font-weight:bold;
-}
-
-.action-buttons{
-    display:flex;
-    gap:10px;
-    margin-top:10px;
-}
-
-.action-buttons button{
-    flex:1;
-}
-
-.search{
-    margin-top:30px;
-}
-
-@media(min-width:768px){
-    .month-grid{
-        grid-template-columns:repeat(4,1fr);
-    }
-}
+body{font-family:Arial,sans-serif;background:#f5f5f5;margin:0;padding:15px}
+.container{max-width:1000px;margin:auto;background:white;padding:20px;border-radius:15px}
+h1{text-align:center;color:#7a4900}
+.lang-btn{background:#333;margin-bottom:15px}
+.total{font-size:22px;font-weight:bold;color:red;margin-bottom:20px}
+input,select,textarea,button{width:100%;padding:12px;margin-top:10px;border-radius:10px;border:1px solid #ccc;box-sizing:border-box;font-size:16px}
+button{background:#7a4900;color:white;border:none;cursor:pointer;font-weight:bold}
+.month-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:15px}
+.month-box{background:#fafafa;padding:10px;border-radius:10px}
+.customer{background:#fff8ef;padding:15px;margin-top:20px;border-radius:15px;border-left:6px solid orange}
+.status-red{color:red;font-weight:bold}
+.action-buttons{display:flex;gap:10px;margin-top:10px}
+.action-buttons button{flex:1}
+.search{margin-top:30px}
+@media(min-width:768px){.month-grid{grid-template-columns:repeat(4,1fr)}}
 </style>
 </head>
 
 <body>
-
 <div class="container">
 
 <button class="lang-btn" onclick="toggleLang()" id="langBtn">English</button>
@@ -128,11 +45,8 @@ button{
 </select>
 
 <input type="text" id="name" placeholder="客户名字">
-
 <input type="text" id="phone" placeholder="电话号码，例如 0128298002">
-
 <input type="number" id="amount" placeholder="欠款金额 RM">
-
 <input type="number" id="year" placeholder="年份，例如 2026">
 
 <div class="month-grid" id="months"></div>
@@ -140,7 +54,6 @@ button{
 <textarea id="remark" placeholder="备注"></textarea>
 
 <button onclick="addCustomer()" id="addBtn">新增记录</button>
-
 <button onclick="exportExcel()" id="exportBtn">导出Excel总结</button>
 
 <div class="search">
@@ -168,6 +81,7 @@ const text = {
         add:"新增记录",
         export:"导出Excel总结",
         search:"搜索客户、电话、地区、年份",
+        notRecord:"不记录",
         paid:"结账",
         unpaid:"未结账",
         areaLabel:"地区",
@@ -196,6 +110,7 @@ const text = {
         add:"Add Record",
         export:"Export Excel Summary",
         search:"Search customer, phone, area, year",
+        notRecord:"Not Record",
         paid:"Paid",
         unpaid:"Unpaid",
         areaLabel:"Area",
@@ -256,6 +171,7 @@ function buildMonths(){
         <div class="month-box">
             <label>${m}</label>
             <select id="month${i}">
+                <option value="不记录">${t.notRecord}</option>
                 <option value="未结账">${t.unpaid}</option>
                 <option value="结账">${t.paid}</option>
             </select>
@@ -278,15 +194,7 @@ function addCustomer(){
         months.push(document.getElementById(`month${i}`).value);
     }
 
-    customers.push({
-        area,
-        name,
-        phone,
-        amount,
-        year,
-        remark,
-        months
-    });
+    customers.push({area,name,phone,amount,year,remark,months});
 
     localStorage.setItem("customers", JSON.stringify(customers));
 
@@ -305,7 +213,7 @@ function clearForm(){
     document.getElementById("remark").value = "";
 
     for(let i=0;i<12;i++){
-        document.getElementById(`month${i}`).value = "未结账";
+        document.getElementById(`month${i}`).value = "不记录";
     }
 }
 
@@ -388,7 +296,7 @@ function sendWhatsApp(index){
 
     let phone = formatPhone(c.phone);
 
-    let message = `${t.message}${c.year} ${unpaid.join("、")}。\n\n${t.amountLabel}: RM ${Number(c.amount).toFixed(2)}\n\nThank you.`;
+    let message = `${t.message}${c.year} ${unpaid.join("、") || t.noUnpaid}。\n\n${t.amountLabel}: RM ${Number(c.amount).toFixed(2)}\n\nThank you.`;
 
     let url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 
